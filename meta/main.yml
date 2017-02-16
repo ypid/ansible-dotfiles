@@ -1,0 +1,28 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+galaxy_info:
+
+  author: 'Robin Schneider'
+  description: 'Customized and fast dotfiles deployment'
+  license: 'GPL-3.0'
+  min_ansible_version: '2.1.4'
+
+  platforms:
+
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+
+    - name: Ubuntu
+      versions:
+        - precise
+        - trusty
+        - xenial
+
+  galaxy_tags:
+    - dotfiles

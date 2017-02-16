@@ -1,0 +1,49 @@
+---
+
+# .. Installation (((
+dotfiles__copy_mode: 'tar'
+dotfiles__temp_tar_file: '/tmp/.ypid_dotfiles.tar.gz'
+
+dotfiles__source_url: 'https://github.com/ypid/dotfiles.git'
+dotfiles__source_path: '/home/user/.config/dotfiles'
+
+# Note that users in stuff group can manage this path.
+dotfiles__target_path: '/usr/local/share/dotfiles'
+dotfiles__home_location: '.config/dotfiles'
+# .. )))
+
+# Update if older then.
+# dotfiles__max_age_in_seconds: '{{ 6 * 30 * 24 * 3600 }}'
+dotfiles__max_age_in_seconds: 3600
+# dotfiles__max_age_in_seconds: 0
+dotfiles__update: True
+
+# .. Adopt dotfiles (((
+#
+dotfiles__adopt_gitconfig: True
+dotfiles__adopt_ackrc: True
+# .. )))
+
+# .. Users (((
+# Enable dotfiles for the selected users by default?
+dotfiles__users_enabled: True
+
+dotfiles__enable_new_users: True
+
+dotfiles__user_root_enabled: False
+dotfiles__user_root:
+  home: '/root'
+  user: 'root'
+
+dotfiles__users: []
+
+dotfiles__users_role: |
+  {{
+    ([ dotfiles__user_root ] if (dotfiles__user_root_enabled | bool) else []) +
+    []
+  }}
+
+dotfiles__group_users: []
+dotfiles__host_users: []
+
+# .. )))
