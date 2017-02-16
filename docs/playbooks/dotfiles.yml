@@ -1,0 +1,14 @@
+---
+
+- name: Customized and fast dotfiles deployment
+  hosts: [ 'ypid_service_dotfiles' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: ypid.dotfiles
+      tags: [ 'role::dotfiles' ]
