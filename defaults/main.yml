@@ -5,7 +5,7 @@ dotfiles__copy_mode: 'tar'
 dotfiles__temp_tar_file: '/tmp/.ypid_dotfiles.tar.gz'
 
 dotfiles__source_url: 'https://github.com/ypid/dotfiles.git'
-dotfiles__source_path: '/home/user/.config/dotfiles'
+dotfiles__source_path: '/home/user/.ansible/ypid-ansible-common/submodules/ypid-dotfiles'
 
 # Note that users in stuff group can manage this path.
 dotfiles__target_path: '/usr/local/share/dotfiles'
