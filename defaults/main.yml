@@ -47,3 +47,17 @@ dotfiles__group_users: []
 dotfiles__host_users: []
 
 # .. )))
+
+
+dotfiles__include_vcs: False
+dotfiles__users_combined: '{{
+  (dotfiles__users_role  | list) +
+  (dotfiles__users       | list) +
+  (dotfiles__group_users | list) +
+  (dotfiles__host_users  | list) }}'
+dotfiles_do_update: '{{
+    (not dotfiles__register_stat_target_path.stat.exists) or
+    (dotfiles__update|bool and
+      ((ansible_date_time.epoch|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
+    )
+  }}'
