@@ -156,6 +156,7 @@
     dest: '{{ (item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location) | dirname }}'
     state: 'directory'
   become_user: '{{ item.user|d(item.name) }}'
+  no_log: '{{ dotfiles__no_log | bool }}'
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Create symbolic link to dotfiles
@@ -166,6 +167,7 @@
   become_user: '{{ item.user|d(item.name) }}'
   register: dotfiles__register_symbolic_link
   when: not ansible_check_mode
+  no_log: '{{ dotfiles__no_log | bool }}'
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Ensure default configuration files are absent
@@ -174,6 +176,7 @@
     state: 'absent'
   become_user: '{{ (item[0].item.user|d(item[0].item.name)) }}'
   changed_when: False
+  no_log: '{{ dotfiles__no_log | bool }}'
   with_nested:
     - '{{ dotfiles__register_symbolic_link.results|d({}) }}'
     -
@@ -189,6 +192,7 @@
   become_user: '{{ (item.item.user|d(item.item.name)) }}'
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
+  no_log: '{{ dotfiles__no_log | bool }}'
   when: dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item|changed)
   with_items: '{{ dotfiles__register_symbolic_link.results|d({}) }}'
   tags: [ 'role::dotfiles:enable' ]

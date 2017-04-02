@@ -61,3 +61,12 @@ dotfiles_do_update: '{{
       ((ansible_date_time.epoch|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
     )
   }}'
+
+# .. envvar:: dotfiles__no_log [[[
+#
+# Enable or disable Ansible task logging. By default all task logging is
+# disabled because the variables used to define user accounts can contain
+# passwords. This variable should not be changed apart for debugging.
+dotfiles__no_log: True
+
+                                                                   # ]]]
