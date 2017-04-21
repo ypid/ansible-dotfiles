@@ -151,9 +151,9 @@
   when: dotfiles_do_update|bool
   tags: [ 'role::dotfiles:install' ]
 
-- name: Create parent directories for dotfiles
+- name: Ensure parent directories for dotfiles exist
   file:
-    dest: '{{ (item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location) | dirname }}'
+    dest: '{{ ("~/" + dotfiles__home_location) | dirname }}'
     state: 'directory'
   become_user: '{{ item.user|d(item.name) }}'
   no_log: '{{ dotfiles__no_log | bool }}'
@@ -162,7 +162,7 @@
 - name: Create symbolic link to dotfiles
   file:
     src: '{{ dotfiles__target_path }}'
-    dest: '{{ item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location }}'
+    dest: '{{ "~/" + dotfiles__home_location }}'
     state: 'link'
   become_user: '{{ item.user|d(item.name) }}'
   register: dotfiles__register_symbolic_link
@@ -186,9 +186,7 @@
 - name: Enable dotfiles
   command: ./install
   args:
-    chdir: '{{ item.item.home|d("/home/" + (item.item.user|d(item.item.name))) + "/" + dotfiles__home_location }}'
-  environment:
-    HOME: '{{ item.item.home|d("/home/" + (item.item.user|d(item.item.name))) }}'
+    chdir: '{{ "~/" + dotfiles__home_location }}'
   become_user: '{{ (item.item.user|d(item.item.name)) }}'
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)

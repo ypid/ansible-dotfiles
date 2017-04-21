@@ -13,8 +13,8 @@ dotfiles__home_location: '.config/dotfiles'
 # .. )))
 
 # Update if older then.
-# dotfiles__max_age_in_seconds: '{{ 6 * 30 * 24 * 3600 }}'
-dotfiles__max_age_in_seconds: 3600
+dotfiles__max_age_in_seconds: '{{ 1 * 24 * 3600 }}'
+# dotfiles__max_age_in_seconds: 3600
 # dotfiles__max_age_in_seconds: 0
 dotfiles__update: True
 
@@ -32,7 +32,6 @@ dotfiles__enable_new_users: True
 
 dotfiles__user_root_enabled: False
 dotfiles__user_root:
-  home: '/root'
   user: 'root'
 
 dotfiles__users: []
