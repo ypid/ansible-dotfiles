@@ -157,6 +157,7 @@
     state: 'directory'
   become_user: '{{ item.user|d(item.name) }}'
   no_log: '{{ dotfiles__no_log | bool }}'
+  when: (item.name|d() and item.state|d('present') != 'absent')
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Create symbolic link to dotfiles
@@ -166,7 +167,7 @@
     state: 'link'
   become_user: '{{ item.user|d(item.name) }}'
   register: dotfiles__register_symbolic_link
-  when: not ansible_check_mode
+  when: (item.name|d() and item.state|d('present') != 'absent') and not ansible_check_mode
   no_log: '{{ dotfiles__no_log | bool }}'
   with_items: '{{ dotfiles__users_combined }}'
 
@@ -177,6 +178,7 @@
   become_user: '{{ (item[0].item.user|d(item[0].item.name)) }}'
   changed_when: False
   no_log: '{{ dotfiles__no_log | bool }}'
+  when: (not item[0]|skipped)
   with_nested:
     - '{{ dotfiles__register_symbolic_link.results|d({}) }}'
     -
@@ -191,6 +193,6 @@
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
   no_log: '{{ dotfiles__no_log | bool }}'
-  when: dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item|changed)
+  when: (not item|skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item|changed)
   with_items: '{{ dotfiles__register_symbolic_link.results|d({}) }}'
   tags: [ 'role::dotfiles:enable' ]
