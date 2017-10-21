@@ -11,6 +11,7 @@
   #   creates: '{{ dotfiles__temp_tar_file }}'
   become: False
   delegate_to: 'localhost'
+  run_once: True
   when: dotfiles_do_update|bool and dotfiles__copy_mode == 'tar'
   tags: [ 'role::dotfiles:install' ]
 
