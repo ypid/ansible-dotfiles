@@ -195,6 +195,6 @@
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
   no_log: '{{ dotfiles__no_log | bool }}'
-  when: (not item is skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item is changed)
+  when: (item is not skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item is changed)
   with_items: '{{ dotfiles__register_symbolic_link.results|d({}) }}'
   tags: [ 'role::dotfiles:enable' ]
