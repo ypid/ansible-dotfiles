@@ -5,6 +5,10 @@
     path: '{{ dotfiles__target_path }}'
   register: dotfiles__register_stat_target_path
 
+- name: Get current time
+  command: date '+%s'
+  register: dotfiles__register_date_unix_epoch
+
 - name: Create tar archive on the Ansible controller
   command: tar --create --gzip {{ "" if (dotfiles__include_vcs|bool) else "--exclude-vcs" }} --file "{{ dotfiles__temp_tar_file }}" --directory "{{ dotfiles__source_path }}" .
   args:

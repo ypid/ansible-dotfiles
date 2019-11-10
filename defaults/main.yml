@@ -57,7 +57,7 @@ dotfiles__users_combined: '{{
 dotfiles_do_update: '{{
     (not dotfiles__register_stat_target_path.stat.exists) or
     (dotfiles__update|bool and
-      ((ansible_date_time.epoch|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
+      ((dotfiles__register_date_unix_epoch.stdout|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
     )
   }}'
 
