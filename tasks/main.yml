@@ -7,6 +7,7 @@
 
 - name: Get current time
   command: date '+%s'
+  changed_when: False
   register: dotfiles__register_date_unix_epoch
 
 - name: Create tar archive on the Ansible controller
