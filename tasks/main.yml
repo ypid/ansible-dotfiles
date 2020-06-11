@@ -1,5 +1,8 @@
 ---
 
+- import_role:
+    name: 'secret'
+
 - name: Check age of the target path
   stat:
     path: '{{ dotfiles__target_path }}'

@@ -1,9 +1,5 @@
 ---
 
-dependencies:
-
-  - role: debops.secret
-
 galaxy_info:
 
   author: 'Robin Schneider'
