@@ -179,6 +179,12 @@
   register: dotfiles__register_symbolic_link
   when: (item.name|d() and item.state|d('present') != 'absent') and not ansible_check_mode
   no_log: '{{ dotfiles__no_log | bool }}'
+  register: dotfiles__register_create_symlink
+  failed_when: (dotfiles__register_create_symlink.failed|bool) and (
+                (item.dotfiles_fail_on_existing_dir|d(True)|bool) or (
+                (not item.dotfiles_fail_on_existing_dir|d(True)|bool) and
+                ('refusing to convert from directory to symlink for' not in dotfiles__register_create_symlink.msg)
+               ))
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Ensure default configuration files are absent
