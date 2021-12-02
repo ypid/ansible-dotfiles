@@ -15,14 +15,8 @@ dotfiles__home_location: '.config/dotfiles'
 # Update if older then.
 dotfiles__max_age_in_seconds: '{{ 1 * 24 * 3600 }}'
 # dotfiles__max_age_in_seconds: 3600
-# dotfiles__max_age_in_seconds: 0
+# dotfiles__max_age_in_seconds: 60
 dotfiles__update: True
-
-# .. Adopt dotfiles (((
-#
-dotfiles__adopt_gitconfig: True
-dotfiles__adopt_ackrc: True
-# .. )))
 
 # .. Users (((
 # Enable dotfiles for the selected users by default?

@@ -11,8 +11,8 @@ galaxy_info:
 
     - name: Debian
       versions:
-        - wheezy
-        - jessie
+        - buster
+        - bullseye
 
     - name: Ubuntu
       versions:

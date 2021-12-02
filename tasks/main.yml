@@ -44,6 +44,7 @@
     dest: '{{ dotfiles__target_path }}'
     copy: True
   when: dotfiles_do_update|bool and dotfiles__copy_mode == 'tar' and not ansible_check_mode
+  register: dotfiles__register_archive_extract
   tags: [ 'role::dotfiles:install' ]
 
 - name: Copy over dotfiles
@@ -53,102 +54,12 @@
   when: dotfiles_do_update|bool and dotfiles__copy_mode != 'tar'
   tags: [ 'role::dotfiles:install' ]
 
-# - name: Fix git remote address
-#   git:
-#     repo: '{{ dotfiles__source_url }}'
-#     dest: '{{ dotfiles__target_path }}'
-#     remote: 'upstream'
-#     update: False
-#     clone: False
-
-# - name: Fix git remote address
-#   ini_file:
-#     dest: '{{ dotfiles__target_path + "/.git/config" }}'
-#     section: 'remote "origin"'
-#     option: '        url'
-#     value: '{{ item.value|d(omit) }}'
-#     state: '{{ item.state|d(omit) }}'
-#   with_items:
-#     - state: 'absent'
-#     - state: 'present'
-#       value: '{{ dotfiles__source_url }}'
-
 - name: Fix git remote address
   replace:
     dest: '{{ dotfiles__target_path + "/.git/config" }}'
     regexp: '{{ "url = git@ypid.github.com:ypid/dotfiles.git" | regex_escape() }}'
     replace: 'url = {{ dotfiles__source_url }}'
   when: not ansible_check_mode and dotfiles__include_vcs|bool
-
-- name: Patch git config for older systems
-  lineinfile:
-    dest: '{{ dotfiles__target_path }}/gitconfig'
-    regexp: '{{ item.regexp }}'
-    state: '{{ item.state }}'
-  when: (
-          dotfiles_do_update|bool and
-          dotfiles__adopt_gitconfig | bool and (
-            (ansible_distribution in [ 'Ubuntu' ] and ansible_distribution_release in [ 'precise' ]) or
-            (ansible_distribution in [ 'Linuxmint' ] and ansible_distribution_major_version in [ '16' ])
-          )
-        )
-  with_items:
-    - regexp: 'default\s*=\s*simple'
-      state: absent
-  tags: [ 'role::dotfiles:install' ]
-
-- name: Disable GPG signing in git config
-  lineinfile:
-    dest: '{{ dotfiles__target_path }}/gitconfig'
-    regexp: '{{ item.regexp }}'
-    state: '{{ item.state }}'
-  when: dotfiles_do_update|bool and dotfiles__adopt_gitconfig|bool
-  with_items:
-    - regexp: 'gpgsign\s*=\s*true'
-      state: absent
-  tags: [ 'role::dotfiles:install' ]
-
-- name: Disable mode-mouse in tmux config
-  lineinfile:
-    dest: '{{ dotfiles__target_path }}/tmux.conf'
-    regexp: '{{ item.regexp }}'
-    state: '{{ item.state }}'
-  when: dotfiles_do_update|bool
-  with_items:
-    - regexp: 'mode-mouse on'
-      state: absent
-  tags: [ 'role::dotfiles:install' ]
-
-- name: Disable AppArmor support for Firejail
-  replace:
-    dest: '{{ dotfiles__target_path }}/firejail-scripts/config_common.sh'
-    regexp: ' --apparmor'
-  when: not (ansible_cmdline.apparmor|d(0)|string == "1" and ansible_cmdline.security|d("none") == "apparmor")
-  tags: [ 'role::dotfiles:install' ]
-
-- name: Patch ackrc for older systems
-  replace:
-    dest: '{{ dotfiles__target_path }}/ackrc'
-    regexp: '^(--ignore-(:?directory|file).*)'
-    replace: '# Disabled by Ansible, may not be supported by the installed version:\n# \1'
-  when: (
-          dotfiles_do_update|bool and
-          dotfiles__adopt_ackrc | bool and (
-            (ansible_distribution in [ 'Debian' ] and ansible_distribution_release in [ 'wheezy' ]) or
-            (ansible_distribution in [ 'Ubuntu' ] and ansible_distribution_release in [ 'precise' ]) or
-            (ansible_distribution in [ 'Linuxmint' ] and ansible_distribution_major_version in [ '16' ])
-          )
-        )
-  tags: [ 'role::dotfiles:install' ]
-
-# Works fine on my workstations.
-# - name: Disable vim-bad-whitespace in vimrc
-#   replace:
-#     dest: '{{ dotfiles__target_path }}/vimrc'
-#     regexp: '^(\s*)(Bundle ''bitc/vim-bad-whitespace'')$'
-#     replace: '\1" Disabled by Ansible, because bug in indent filter:\n\1" \2'
-#   tags: [ 'role::dotfiles:install' ]
-#   when: not ansible_check_mode
 
 - name: Set permissions for dotfiles
   file:
@@ -176,7 +87,6 @@
     dest: '{{ "~/" + dotfiles__home_location }}'
     state: 'link'
   become_user: '{{ item.user|d(item.name) }}'
-  register: dotfiles__register_symbolic_link
   when: (item.name|d() and item.state|d('present') != 'absent') and not ansible_check_mode
   no_log: '{{ dotfiles__no_log | bool }}'
   register: dotfiles__register_create_symlink
@@ -187,28 +97,14 @@
                ))
   with_items: '{{ dotfiles__users_combined }}'
 
-- name: Ensure default configuration files are absent
-  file:
-    path: '{{ item[1].path }}'
-    state: 'absent'
-  become_user: '{{ (item[0].item.user|d(item[0].item.name)) }}'
-  changed_when: False
-  no_log: '{{ dotfiles__no_log | bool }}'
-  when: (not item[0] is skipped)
-  with_nested:
-    - '{{ dotfiles__register_symbolic_link.results|d({}) }}'
-    -
-      - path: '~/.config/htop/htoprc'
-      - path: '~/.gnupg/gpg.conf'
-
 - name: Enable dotfiles
   command: ./install
   args:
     chdir: '{{ "~/" + dotfiles__home_location }}'
-  become_user: '{{ (item.item.user|d(item.item.name)) }}'
+  become_user: '{{ (item.user|d(item.name)) }}'
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
   no_log: '{{ dotfiles__no_log | bool }}'
-  when: (item is not skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or item is changed)
-  with_items: '{{ dotfiles__register_symbolic_link.results|d({}) }}'
+  when: (dotfiles__register_archive_extract is not skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or dotfiles__register_archive_extract is changed)
+  with_items: '{{ dotfiles__users_combined }}'
   tags: [ 'role::dotfiles:enable' ]
