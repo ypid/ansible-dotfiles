@@ -104,6 +104,10 @@
   become_user: '{{ (item.user|d(item.name)) }}'
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
+  # Ignore "Some tasks were not executed successfully" for now.
+  failed_when: (dotfiles__register_enable.rc != 0 and not
+                ('Some tasks were not executed successfully' in dotfiles__register_enable.stdout)
+               )
   no_log: '{{ dotfiles__no_log | bool }}'
   when: (dotfiles__register_archive_extract is not skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or dotfiles__register_archive_extract is changed)
   with_items: '{{ dotfiles__users_combined }}'
