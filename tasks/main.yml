@@ -98,7 +98,7 @@
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Enable dotfiles
-  command: ./install
+  shell: cd "{{ item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location }}" && ./install
   args:
     chdir: '{{ item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location }}'
   environment:
