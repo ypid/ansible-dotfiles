@@ -109,6 +109,10 @@
                 ('Some tasks were not executed successfully' in dotfiles__register_enable.stdout)
                )
   no_log: '{{ dotfiles__no_log | bool }}'
-  when: (dotfiles__register_archive_extract is not skipped) and dotfiles__users_enabled|bool and (dotfiles_do_update|bool or dotfiles__register_archive_extract is changed)
+  when: (item.name|d() and item.state|d('present') != 'absent')
+         and not ansible_check_mode
+         and (dotfiles__register_archive_extract is not skipped)
+         and dotfiles__users_enabled|bool
+         and (dotfiles_do_update|bool or dotfiles__register_archive_extract is changed)
   with_items: '{{ dotfiles__users_combined }}'
   tags: [ 'role::dotfiles:enable' ]
