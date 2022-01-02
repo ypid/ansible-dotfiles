@@ -74,7 +74,7 @@
 
 - name: Ensure parent directories for dotfiles exist
   file:
-    dest: '{{ ("~/" + dotfiles__home_location) | dirname }}'
+    dest: '{{ (item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location) | dirname }}'
     state: 'directory'
   become_user: '{{ item.user|d(item.name) }}'
   no_log: '{{ dotfiles__no_log | bool }}'
@@ -84,7 +84,7 @@
 - name: Create symbolic link to dotfiles
   file:
     src: '{{ dotfiles__target_path }}'
-    dest: '{{ "~/" + dotfiles__home_location }}'
+    dest: '{{ item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location }}'
     state: 'link'
   become_user: '{{ item.user|d(item.name) }}'
   when: (item.name|d() and item.state|d('present') != 'absent') and not ansible_check_mode
@@ -100,7 +100,9 @@
 - name: Enable dotfiles
   command: ./install
   args:
-    chdir: '{{ "~/" + dotfiles__home_location }}'
+    chdir: '{{ item.home|d("/home/" + (item.user|d(item.name))) + "/" + dotfiles__home_location }}'
+  environment:
+    HOME: '{{ item.home|d("/home/" + (item.user|d(item.name))) }}'
   become_user: '{{ (item.user|d(item.name)) }}'
   register: dotfiles__register_enable
   changed_when: ('Creating' in dotfiles__register_enable.stdout)
