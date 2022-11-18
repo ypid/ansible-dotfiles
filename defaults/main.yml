@@ -26,7 +26,7 @@ dotfiles__enable_new_users: True
 
 dotfiles__user_root_enabled: False
 dotfiles__user_root:
-  user: 'root'
+  name: 'root'
   home: '/root'
 
 dotfiles__users: []
