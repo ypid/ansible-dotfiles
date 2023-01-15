@@ -1,0 +1,8 @@
+---
+
+# File without tasks to support:
+#
+# - name: Import default variables from ypid.dotfiles role
+#   ansible.builtin.import_role:
+#     name: 'ypid.dotfiles'
+#     tasks_from: 'nop'
