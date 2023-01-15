@@ -1,20 +1,21 @@
 ---
 
-- import_role:
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check age of the target path
-  stat:
+  ansible.builtin.stat:
     path: '{{ dotfiles__target_path }}'
   register: dotfiles__register_stat_target_path
 
 - name: Get current time
-  command: date '+%s'
+  ansible.builtin.command: date '+%s'
   changed_when: False
   register: dotfiles__register_date_unix_epoch
 
 - name: Create tar archive on the Ansible controller
-  command: tar --create --gzip {{ "" if (dotfiles__include_vcs|bool) else "--exclude-vcs" }} --file "{{ dotfiles__temp_tar_file }}" --directory "{{ dotfiles__source_path }}" .
+  ansible.builtin.command: tar --create --gzip {{ "" if (dotfiles__include_vcs|bool) else "--exclude-vcs" }} --file "{{ dotfiles__temp_tar_file }}" --directory "{{ dotfiles__source_path }}" .
   args:
     warn: False
   #   creates: '{{ dotfiles__temp_tar_file }}'
@@ -25,44 +26,47 @@
   tags: [ 'role::dotfiles:install' ]
 
 - name: Remove old dotfiles to ensure clean unarchive
-  file:
+  ansible.builtin.file:
     dest: '{{ dotfiles__target_path }}'
     state: 'absent'
   when: dotfiles_do_update|bool and dotfiles__copy_mode == 'tar'
+  no_log: True
+  # This task would otherwise log every single file that was deleted which
+  # spams the log with a not helpful file path list.
   tags: [ 'role::dotfiles:install' ]
 
 - name: Create target directory
-  file:
+  ansible.builtin.file:
     dest: '{{ dotfiles__target_path }}'
     state: 'directory'
   when: dotfiles_do_update|bool and dotfiles__copy_mode == 'tar'
   tags: [ 'role::dotfiles:install' ]
 
 - name: Extract tar archive
-  unarchive:
+  ansible.builtin.unarchive:
     src:  '{{ dotfiles__temp_tar_file }}'
+    remote_src: False
     dest: '{{ dotfiles__target_path }}'
-    copy: True
   when: dotfiles_do_update|bool and dotfiles__copy_mode == 'tar' and not ansible_check_mode
   register: dotfiles__register_archive_extract
   tags: [ 'role::dotfiles:install' ]
 
 - name: Copy over dotfiles
-  copy:
+  ansible.builtin.copy:
     src:  '{{ dotfiles__source_path }}'
     dest: '{{ dotfiles__target_path }}'
   when: dotfiles_do_update|bool and dotfiles__copy_mode != 'tar'
   tags: [ 'role::dotfiles:install' ]
 
 - name: Fix git remote address
-  replace:
+  ansible.builtin.replace:
     dest: '{{ dotfiles__target_path + "/.git/config" }}'
     regexp: '{{ "url = git@ypid.github.com:ypid/dotfiles.git" | regex_escape() }}'
     replace: 'url = {{ dotfiles__source_url }}'
   when: not ansible_check_mode and dotfiles__include_vcs|bool
 
 - name: Set permissions for dotfiles
-  file:
+  ansible.builtin.file:
     path: '{{ dotfiles__target_path }}'
     state: 'directory'
     recurse: yes
@@ -73,7 +77,7 @@
   tags: [ 'role::dotfiles:install' ]
 
 - name: Ensure parent directories for dotfiles exist
-  file:
+  ansible.builtin.file:
     dest: '{{ (item.home|d("~") + "/" + dotfiles__home_location) | dirname }}'
     state: 'directory'
   become_user: '{{ item.user|d(item.name) }}'
@@ -82,7 +86,7 @@
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Create symbolic link to dotfiles
-  file:
+  ansible.builtin.file:
     src: '{{ dotfiles__target_path }}'
     dest: '{{ item.home|d("~") + "/" + dotfiles__home_location }}'
     state: 'link'
@@ -98,7 +102,7 @@
   with_items: '{{ dotfiles__users_combined }}'
 
 - name: Enable dotfiles
-  command: ./install
+  ansible.builtin.command: ./install
   args:
     chdir: '{{ item.home|d("~") + "/" + dotfiles__home_location }}'
   become_user: '{{ (item.user|d(item.name)) }}'
