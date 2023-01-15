@@ -8,7 +8,7 @@ dotfiles__source_url: 'https://github.com/ypid/dotfiles.git'
 dotfiles__source_path: '/home/user/.ansible/dotfiles'
 
 # Note that users in stuff group can manage this path.
-dotfiles__target_path: '/usr/local/share/dotfiles'
+dotfiles__target_path: '{{ ansible_local.fhs.share | d("/usr/local/share") }}/ypid_dotfiles'
 dotfiles__home_location: '.config/dotfiles'
 # .. )))
 
@@ -49,10 +49,15 @@ dotfiles__users_combined: '{{
   (dotfiles__users       | list) +
   (dotfiles__group_users | list) +
   (dotfiles__host_users  | list) }}'
+
+# Copy is currently disabled for Qubes OS because of "TypeError: a bytes-like
+# object is required, not 'str'" in "Extract tar archive" tasks.
 dotfiles_do_update: '{{
-    (not dotfiles__register_stat_target_path.stat.exists) or
-    (dotfiles__update|bool and
-      ((dotfiles__register_date_unix_epoch.stdout|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
+    (not persistent_paths__qubes_os_enabled) and (
+      (not dotfiles__register_stat_target_path.stat.exists) or
+      (dotfiles__update|bool and
+        ((dotfiles__register_date_unix_epoch.stdout|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
+      )
     )
   }}'
 
