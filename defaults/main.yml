@@ -52,8 +52,9 @@ dotfiles__users_combined: '{{
 
 # Copy is currently disabled for Qubes OS because of "TypeError: a bytes-like
 # object is required, not 'str'" in "Extract tar archive" tasks.
+# Edit 2024-03: Seems to work regardless of that error.
 dotfiles_do_update: '{{
-    (not persistent_paths__qubes_os_enabled) and (
+    (
       (not dotfiles__register_stat_target_path.stat.exists) or
       (dotfiles__update|bool and
         ((dotfiles__register_date_unix_epoch.stdout|int) - (dotfiles__register_stat_target_path.stat.mtime|int) - (dotfiles__max_age_in_seconds|int)) > 0
