@@ -1,14 +1,5 @@
 ---
 
-- name: Import DebOps secret role
-  ansible.builtin.import_role:
-    name: 'secret'
-
-- name: Import default variables from DebOps persistent_paths role
-  ansible.builtin.import_role:
-    name: 'persistent_paths'
-    tasks_from: 'nop'
-
 - name: Check age of the target path
   ansible.builtin.stat:
     path: '{{ dotfiles__target_path }}'

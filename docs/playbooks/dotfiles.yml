@@ -8,6 +8,23 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - name: Import optional DebOps secret role to allow passing user config to dotfiles role
+      # ypid.dotfiles does not use secrets in any way. But without importing
+      # this, whenever a variable is passed to dotfiles that makes use of the
+      # secrets role, Ansible would fail.
+      ansible.builtin.import_role:
+        name: 'secret'
+      tags: [ 'role::secret', 'role::dotfiles' ]
+
+    - name: Import optional default variables from DebOps persistent_paths role
+      ansible.builtin.import_role:
+        name: 'persistent_paths'
+        tasks_from: 'nop'
+        # TODO
+        # tasks_from: 'main_env'
+
   roles:
 
     - role: ypid.dotfiles
