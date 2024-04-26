@@ -12,8 +12,6 @@
 
 - name: Create tar archive on the Ansible controller
   ansible.builtin.command: tar --create --gzip {{ "" if (dotfiles__include_vcs|bool) else "--exclude-vcs" }} --file "{{ dotfiles__temp_tar_file }}" --directory "{{ dotfiles__source_path }}" .
-  args:
-    warn: False
   #   creates: '{{ dotfiles__temp_tar_file }}'
   become: False
   delegate_to: 'localhost'
